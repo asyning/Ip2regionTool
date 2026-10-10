@@ -3,6 +3,7 @@ package Ip2regionTool
 import (
 	"fmt"
 	"github.com/orestonce/Ip2regionTool/dbformat"
+	_ "github.com/orestonce/Ip2regionTool/dbformat/csv"
 	_ "github.com/orestonce/Ip2regionTool/dbformat/geoip"
 	_ "github.com/orestonce/Ip2regionTool/dbformat/ipipdnet/ipdb"
 	_ "github.com/orestonce/Ip2regionTool/dbformat/lionsoul2014"

@@ -3,3 +3,7 @@
 /Ip2regionTool-qt/ip2region-impl.a
 /Ip2regionTool-qt/ip2region-impl.go
 *.exe
+
+*.csv
+*.txt
+*.xdb

@@ -43,10 +43,21 @@ func (DbFormatLinsoul2014v2) ReadData(data []byte) (list []dbformat.IpRangeItem,
 		if dataPtr+dataLen > len(data) {
 			return nil, errors.New("dataPtr/dataLen error: " + strconv.Itoa(dataPtr) + ", " + strconv.Itoa(dataLen))
 		}
-		item.AttachObj = decodeIpRangeAttach(string(data[dataPtr : dataPtr+dataLen]))
+		item.AttachObj = decodeIpRangeAttachv2(string(data[dataPtr : dataPtr+dataLen]))
 		list = append(list, item)
 	}
 	return list, nil
+}
+
+func decodeIpRangeAttachv2(attach string) (attachObj dbformat.IpRangeAttach) {
+	temp := strings.Split(attach, "|")
+	if len(temp) >= 4 {
+		attachObj.Country = temp[0]
+		attachObj.Province = temp[1]
+		attachObj.City = temp[2]
+		attachObj.ISP = temp[3]
+	}
+	return attachObj
 }
 
 func (d DbFormatLinsoul2014v2) FormatAttach(attach dbformat.IpRangeAttach) (value string, err error) {

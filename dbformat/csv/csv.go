@@ -1,0 +1,81 @@
+package csv
+
+import (
+	"bytes"
+	"github.com/orestonce/Ip2regionTool/dbformat"
+	"net"
+	"strings"
+)
+
+type DBFormatCsv struct {
+}
+
+func (DBFormatCsv) GetType() dbformat.DbFormatType {
+	return dbformat.DbFormatType{
+		ShowPriority: dbformat.ShowPriority_txt,
+		NameForCmd:   "csv",
+		Desc:         "csv,纯文本格式",
+		ExtName:      "*.csv",
+		SupportWrite: true,
+	}
+}
+
+func (DBFormatCsv) ReadData(data []byte) (list []dbformat.IpRangeItem, err error) {
+	for _, one := range strings.Split(string(data), "\n") {
+		one = strings.TrimSpace(one)
+		if one == `` {
+			continue
+		}
+		temp := strings.Split(one, `|`)
+		if len(temp) < 2 {
+			continue
+		}
+		sip := dbformat.Ipv4ToUint32(net.ParseIP(temp[0]))
+		eip := dbformat.Ipv4ToUint32(net.ParseIP(temp[1]))
+
+		var attachObj dbformat.IpRangeAttach
+		if len(temp) >= 3 {
+			attachObj.Country = temp[2]
+		}
+		if len(temp) >= 5 {
+			attachObj.Province = temp[4]
+		}
+		if len(temp) >= 6 {
+			attachObj.City = temp[5]
+		}
+		if len(temp) >= 7 {
+			attachObj.ISP = temp[6]
+		}
+
+		list = append(list, dbformat.IpRangeItem{
+			Origin:    one,
+			LowU32:    sip,
+			HighU32:   eip,
+			Attach:    strings.Join(temp[2:], `|`),
+			AttachObj: attachObj,
+		})
+	}
+	return list, nil
+}
+
+func (d DBFormatCsv) FormatAttach(attach dbformat.IpRangeAttach) (value string, err error) {
+	return strings.Join([]string{
+		attach.Country,
+		//"0",
+		attach.Province,
+		attach.City,
+		attach.ISP,
+	}, ","), nil
+}
+
+func (DBFormatCsv) WriteData(list []dbformat.IpRangeItem) (data []byte, err error) {
+	buf := bytes.NewBuffer(nil)
+	for _, one := range list {
+		buf.WriteString(dbformat.Uint32ToIpv4(one.LowU32).String() + `,` + dbformat.Uint32ToIpv4(one.HighU32).String() + `,` + one.Attach + "\n")
+	}
+	return buf.Bytes(), nil
+}
+
+func init() {
+	dbformat.RegisterDbFormat(DBFormatCsv{})
+}
